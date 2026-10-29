@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Next-track recommender | Group A-3 ML</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Next-track recommender</h1>
+  <p>Association rules: what should this listener play next?</p>
+  <nav><a href="index.html">Home</a><a href="rental.html">Rent</a><a href="attrition.html">Attrition</a><a href="stores.html">Stores</a><a href="music.html" class="active">Music</a></nav>
+</header>
+<main>
+  <div class="card">
+    <p class="muted">Tick the tracks played in this listening session, then ask for a recommendation.</p>
+    <form id="form" novalidate>
+      <div class="tracks" id="tracks"></div>
+      <button type="submit">Recommend</button>
+      <button type="button" class="secondary" id="clear">Clear</button>
+    </form>
+    <div id="result" aria-live="polite"></div>
+  </div>
+</main>
+<script src="app.js"></script>
+<script src="music.js"></script>
+<script>
+
+const FALLBACK = [["M01","Workout Anthem"],["M02","Pump It Up"],["M03","Cardio Beats"],["M04","Study Focus 1"],
+  ["M05","Study Focus 2"],["M06","Rain Sounds"],["M07","Deep Sleep"],["M08","Sunday Worship 1"],
+  ["M09","Sunday Worship 2"],["M10","Praise Medley"],["M11","Heartbreak Ballad"],["M12","Love Story"],
+  ["M13","Hip Hop Anthem"],["M14","Street Beats"],["M15","Amapiano Vibes"],["M16","Gengetone Hit"]];
+
+function drawTracks(list) {
+  $("tracks").innerHTML = list.map(([id, name]) =>
+    `<label class="track"><input type="checkbox" value="${esc(id)}"> ${esc(name)}</label>`).join("");
+}
+drawTracks(FALLBACK);
+/* Prefer the live track list from the API; the fallback keeps the page usable if it is unreachable. */
+callApi("/api/v1/tracks").then((d) => {
+  if (Array.isArray(d)) drawTracks(d.map((t) => [t.track_id, t.track_name]));
+}).catch(() => {});
+
+$("clear").addEventListener("click", () => {
+  document.querySelectorAll("#tracks input").forEach((c) => (c.checked = false));
+  $("result").innerHTML = "";
+});
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const out = $("result"), btn = e.target.querySelector("button[type=submit]");
+  const session = [...document.querySelectorAll("#tracks input:checked")].map((c) => c.value);
+  if (!session.length) { out.innerHTML = errorBox("Pick at least one track."); return; }
+  btn.disabled = true; btn.textContent = "Working...";
+  try {
+    const d = await callApi("/api/v1/models/music-recommender/predictions", { session, top_n: 3 });
+    if (!d.recommendations.length) {
+      out.innerHTML = `<div class="result"><b>No rule matches this combination.</b><div class="muted">Only 8 high-confidence rules were kept, so many sessions have no recommendation.</div></div>`;
+    } else {
+      out.innerHTML = `<div class="result">` + d.recommendations.map((r) =>
+        `<div style="margin-bottom:10px"><div class="big">${esc(r.track_name)}</div>
+         <div>Because you played ${r.because_you_played.map(esc).join(" + ")}</div>
+         <div class="muted">Confidence ${(r.confidence * 100).toFixed(1)}% &middot; Lift ${esc(r.lift)}</div></div>`).join("") +
+        `<div class="muted">${d._ms} ms</div></div>`;
+    }
+  } catch (err) {
+    out.innerHTML = errorBox(err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "Recommend";
+  }
+});
+
+</script>
+</body>
+</html>

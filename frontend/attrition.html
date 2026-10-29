@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee attrition risk | Group A-3 ML</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Employee attrition risk</h1>
+  <p>Classification: how likely is an employee to leave?</p>
+  <nav><a href="index.html">Home</a><a href="rental.html">Rent</a><a href="attrition.html" class="active">Attrition</a><a href="stores.html">Stores</a><a href="music.html">Music</a></nav>
+</header>
+<main>
+  <div class="card">
+    <p class="muted">Fill in the employee profile. Leave bonus blank for departments without a bonus scheme.</p>
+    <form id="form" novalidate>
+      <div class="grid">
+        <div class="field"><label for="department">Department</label><select id="department" name="department"><option>Operations</option><option selected>Sales</option><option>Engineering</option><option>HR</option><option>Finance</option></select></div><div class="field"><label for="job_role_level">Job role level</label><select id="job_role_level" name="job_role_level"><option>Junior</option><option selected>Mid</option><option>Senior</option><option>Lead</option></select></div><div class="field"><label for="education_level">Education</label><select id="education_level" name="education_level"><option>Diploma</option><option selected>Bachelor&#x27;s</option><option>Master&#x27;s</option><option>PhD</option></select></div><div class="field"><label for="performance_rating">Performance rating</label><select id="performance_rating" name="performance_rating"><option>Low</option><option selected>Average</option><option>High</option><option>Outstanding</option></select></div><div class="field"><label for="years_at_company">Years at company</label><input id="years_at_company" name="years_at_company" type="number" step="any" min="0" value="2"></div><div class="field"><label for="years_since_last_promotion">Years since last promotion</label><input id="years_since_last_promotion" name="years_since_last_promotion" type="number" step="any" min="0" value="3"></div><div class="field"><label for="monthly_salary_kes">Monthly salary (KES)</label><input id="monthly_salary_kes" name="monthly_salary_kes" type="number" step="any" min="0" value="95000"></div><div class="field"><label for="overtime_hours_per_month">Overtime hours / month</label><input id="overtime_hours_per_month" name="overtime_hours_per_month" type="number" step="any" min="0" value="22"></div><div class="field"><label for="job_satisfaction_score">Job satisfaction (1-5)</label><input id="job_satisfaction_score" name="job_satisfaction_score" type="number" step="any" min="1" max="5" value="2.1"></div><div class="field"><label for="distance_from_home_km">Distance from home (km)</label><input id="distance_from_home_km" name="distance_from_home_km" type="number" step="any" min="0" value="35"></div><div class="field"><label for="num_companies_worked_previously">Previous employers</label><input id="num_companies_worked_previously" name="num_companies_worked_previously" type="number" step="1" data-int min="0" value="3"></div><div class="field"><label for="remote_work_days_per_week">Remote days / week</label><input id="remote_work_days_per_week" name="remote_work_days_per_week" type="number" step="1" data-int min="0" max="5" value="0"></div><div class="field"><label for="work_life_balance_score">Work-life balance (1-5)<small>optional</small></label><input id="work_life_balance_score" name="work_life_balance_score" type="number" step="any" min="1" max="5" data-optional value="2"></div><div class="field"><label for="bonus_amount_kes">Bonus amount (KES)<small>optional</small></label><input id="bonus_amount_kes" name="bonus_amount_kes" type="number" step="any" min="0" data-optional value=""><div class="hint">Blank = no bonus scheme</div></div>
+      </div>
+      <button type="submit">Predict attrition risk</button>
+    </form>
+    <div id="result" aria-live="polite"></div>
+  </div>
+</main>
+<script src="app.js"></script>
+<script src="attrition.js"></script>
+<script>
+setupForm("form", "/api/v1/models/employee-attrition-classifier/predictions", (d) => `<div class="big">${d.predicted_attrition === "Yes" ? "Likely to leave" : "Likely to stay"}</div><div>Attrition probability: <b>${(d.attrition_risk_probability * 100).toFixed(1)}%</b></div><div class="muted">A statistical estimate from past patterns, not a verdict on any individual. ${d._ms} ms</div>`);
+</script>
+</body>
+</html>

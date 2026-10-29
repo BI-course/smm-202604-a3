@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rental price estimator | Group A-3 ML</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Rental price estimator</h1>
+  <p>Regression: estimate monthly rent for a property</p>
+  <nav><a href="index.html">Home</a><a href="rental.html" class="active">Rent</a><a href="attrition.html">Attrition</a><a href="stores.html">Stores</a><a href="music.html">Music</a></nav>
+</header>
+<main>
+  <div class="card">
+    <p class="muted">Fill in the property details. Garage size and security rating may be left blank.</p>
+    <form id="form" novalidate>
+      <div class="grid">
+        <div class="field"><label for="property_type">Property type</label><select id="property_type" name="property_type"><option selected>Apartment</option><option>Townhouse</option><option>Maisonette</option><option>Bungalow</option></select></div><div class="field"><label for="neighborhood">Neighborhood</label><select id="neighborhood" name="neighborhood"><option selected>Kilimani</option><option>Ngong Road</option><option>Westlands</option><option>Karen</option><option>Lavington</option><option>Kileleshwa</option><option>South B</option><option>Syokimau</option></select></div><div class="field"><label for="furnishing_status">Furnishing</label><select id="furnishing_status" name="furnishing_status"><option selected>Unfurnished</option><option>Semi-Furnished</option><option>Fully Furnished</option></select></div><div class="field"><label for="size_sqm">Size (sqm)</label><input id="size_sqm" name="size_sqm" type="number" step="any" min="1" value="86"></div><div class="field"><label for="num_bedrooms">Bedrooms</label><input id="num_bedrooms" name="num_bedrooms" type="number" step="1" data-int min="0" value="3"></div><div class="field"><label for="num_bathrooms">Bathrooms</label><input id="num_bathrooms" name="num_bathrooms" type="number" step="1" data-int min="0" value="2"></div><div class="field"><label for="distance_to_cbd_km">Distance to CBD (km)</label><input id="distance_to_cbd_km" name="distance_to_cbd_km" type="number" step="any" min="0" value="8"></div><div class="field"><label for="property_age_years">Property age (years)</label><input id="property_age_years" name="property_age_years" type="number" step="any" min="0" value="6"></div><div class="field"><label for="service_charge_kes">Service charge (KES)</label><input id="service_charge_kes" name="service_charge_kes" type="number" step="any" min="0" value="21000"></div><div class="field"><label for="amenities_score">Amenities score</label><input id="amenities_score" name="amenities_score" type="number" step="any" min="0" value="30"></div><div class="field"><label for="nearby_schools_count">Nearby schools</label><input id="nearby_schools_count" name="nearby_schools_count" type="number" step="1" data-int min="0" value="3"></div><div class="field"><label for="garage_size_sqm">Garage size (sqm)<small>optional</small></label><input id="garage_size_sqm" name="garage_size_sqm" type="number" step="any" min="0" data-optional value=""><div class="hint">Leave blank if there is no garage</div></div><div class="field"><label for="security_rating">Security rating (1-5)<small>optional</small></label><input id="security_rating" name="security_rating" type="number" step="any" min="1" max="5" data-optional value=""><div class="hint">Leave blank if unknown</div></div>
+      </div>
+      <button type="submit">Estimate rent</button>
+    </form>
+    <div id="result" aria-live="polite"></div>
+  </div>
+</main>
+<script src="app.js"></script>
+<script src="rental.js"></script>
+<script>
+setupForm("form", "/api/v1/models/rental-price-regressor/predictions", (d) => `<div class="muted">Estimated monthly rent</div><div class="big">KES ${Math.round(d.predicted_monthly_rent_kes).toLocaleString("en-KE")}</div><div class="muted">${esc(d.model)} &middot; ${d._ms} ms</div>`);
+</script>
+</body>
+</html>

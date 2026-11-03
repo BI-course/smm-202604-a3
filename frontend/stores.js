@@ -4,7 +4,7 @@
 (() => {
   "use strict";
 
-  const endpoint = "/api/v1/kmeans-store-segmentation/predictions";
+  const endpoint = "/api/v1/models/kmeans-store-segmentation/predictions";
 
   window.App.setupForm("form", endpoint, (data, resultElement) => {
     const cluster = data.assigned_cluster;

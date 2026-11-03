@@ -17,7 +17,11 @@
     <p class="muted">Enter the branch's monthly figures. Values are standardised on the server before K-Means assigns a segment.</p>
     <form id="form" novalidate>
       <div class="grid">
-        <div class="field"><label for="monthly_revenue_kes">Monthly revenue (KES)</label><input id="monthly_revenue_kes" name="monthly_revenue_kes" type="number" step="any" min="0" value="1200000"></div><div class="field"><label for="daily_foot_traffic">Daily foot traffic</label><input id="daily_foot_traffic" name="daily_foot_traffic" type="number" step="any" min="0" value="400"></div><div class="field"><label for="staff_count">Staff count</label><input id="staff_count" name="staff_count" type="number" step="1" data-int min="0" value="10"></div><div class="field"><label for="store_size_sqm">Store size (sqm)</label><input id="store_size_sqm" name="store_size_sqm" type="number" step="any" min="0" value="300"></div><div class="field"><label for="avg_basket_size_kes">Average basket size (KES)</label><input id="avg_basket_size_kes" name="avg_basket_size_kes" type="number" step="any" min="0" value="120"></div>
+        <div class="field"><label for="monthly_revenue_kes">Monthly revenue (KES)</label><input id="monthly_revenue_kes" name="monthly_revenue_kes" type="number" step="any" min="0" value="1200000"></div>
+          <div class="field"><label for="daily_foot_traffic">Daily foot traffic</label><input id="daily_foot_traffic" name="daily_foot_traffic" type="number" step="any" min="0" value="400"></div>
+          <div class="field"><label for="staff_count">Staff count</label><input id="staff_count" name="staff_count" type="number" step="1" data-int min="0" value="10"></div>
+          <div class="field"><label for="store_size_sqm">Store size (sqm)</label><input id="store_size_sqm" name="store_size_sqm" type="number" step="any" min="0" value="300"></div>
+          <div class="field"><label for="avg_basket_size_kes">Average basket size (KES)</label><input id="avg_basket_size_kes" name="avg_basket_size_kes" type="number" step="any" min="0" value="120"></div>
       </div>
       <button type="submit">Find segment</button>
     </form>
@@ -27,7 +31,7 @@
 <script src="app.js"></script>
 <script src="stores.js"></script>
 <script>
-setupForm("form", "/api/v1/models/store-segmenter/predictions", (d) => `<div class="muted">Segment ${d.assigned_cluster + 1} of 5</div><div class="big">${esc(d.segment_name)}</div><div class="muted">${esc(d.model)} &middot; ${d._ms} ms</div>`);
+<!--setupForm("form", "/api/v1/models/kmeans-store-segmentation/predictions", (d) => `<div class="muted">Segment ${d.assigned_cluster + 1} of 5</div><div class="big">${esc(d.segment_name)}</div><div class="muted">${esc(d.model)} &middot; ${d._ms} ms</div>`);-->
 </script>
 </body>
 </html>

@@ -37,6 +37,11 @@ with open(
 valid_names = set(lookup_table["item_name"])
 name_to_id = dict(zip(lookup_table["item_name"], lookup_table["track_id"]))   # only used to label the output
 
+clustering_artifact = joblib.load(
+    os.path.join(MODEL_DIR, "store_clustering_model.pkl")
+)
+clustering_scaler = clustering_artifact["scaler"]
+clustering_kmeans = clustering_artifact["kmeans"]
 
 def error(message, status=400):
     return jsonify({"error": message}), status
@@ -123,6 +128,31 @@ def recommend_music():
         "model": "Apriori association rules, cleaned + precomputed lookup",
     })
 
+@app.route("/api/v1/models/kmeans-store-segmentation/predictions", methods=["POST"])
+def predict_customer_segment():
+    payload = request.get_json()
+    input_row = pd.DataFrame([payload])
+
+    scaled_input = clustering_scaler.transform(input_row)
+    assigned_cluster = int(clustering_kmeans.predict(scaled_input)[0])+1
+    cluster_names=""
+    if assigned_cluster == 1:
+        cluster_names="Smaller, lower-volume stores"
+    elif assigned_cluster == 2:
+        cluster_names= "Large, high-volume stores"
+    elif assigned_cluster == 3:
+        cluster_names = "High-traffic, low-basket stores"
+    elif assigned_cluster == 4:
+        cluster_names = "Low-traffic, high-basket stores"
+    elif assigned_cluster == 5:
+        cluster_names = "Mid-scale, near-average stores"
+
+
+    return jsonify({
+        "assigned_cluster": assigned_cluster,
+        "cluster_names": cluster_names,
+        "model": "K-Means (k=5, standardized features)",
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)

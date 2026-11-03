@@ -4,11 +4,11 @@
 (() => {
   "use strict";
 
-  const endpoint = "/api/v1/models/store-segmenter/predictions";
+  const endpoint = "/api/v1/kmeans-store-segmentation/predictions";
 
   window.App.setupForm("form", endpoint, (data, resultElement) => {
     const cluster = data.assigned_cluster;
-    const segment = data.cluster_name;
+    const segment = data.cluster_names;
     const model = data.model || "Store clustering model";
 
     if (cluster === undefined || cluster === null) {

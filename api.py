@@ -131,11 +131,26 @@ def recommend_music():
 @app.route("/api/v1/models/kmeans-store-segmentation/predictions", methods=["POST"])
 def predict_customer_segment():
     payload = request.get_json()
-    input_row = pd.DataFrame([payload])
 
-    scaled_input = clustering_scaler.transform(input_row)
-    assigned_cluster = int(clustering_kmeans.predict(scaled_input)[0])+1
+    feature_cols = clustering_artifact["features"]
+
+    input_row = pd.DataFrame(
+        [[payload.get(feature) for feature in feature_cols]],
+        columns=feature_cols
+    )
+
+    scaled_values = clustering_scaler.transform(input_row)
+
+    # Preserve feature names after scaling
+    scaled_input = pd.DataFrame(
+        scaled_values,
+        columns=feature_cols
+    )
+
+    cluster_id = int(clustering_kmeans.predict(scaled_input)[0])
+    assigned_cluster = cluster_id + 1
     cluster_names=""
+
     if assigned_cluster == 1:
         cluster_names="Smaller, lower-volume stores"
     elif assigned_cluster == 2:

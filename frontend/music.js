@@ -1,167 +1,66 @@
-/* Music recommendation page. Requires app.js.
-   The API expects track names in "basket", not track IDs. */
+/* music.js -- logic for music.html (end-user view).
+   Load app.js first: this file uses its helpers through window.App (callApi, escapeHtml).
+
+   The listener ticks tracks and gets a recommendation. Rules, confidence and lift stay
+   inside the API; they are not shown here.
+   Fails gracefully: no matching rule -> a friendly "no recommendation yet" card;
+   server unreachable or bad request -> a plain error message. */
 (() => {
   "use strict";
 
-  const form = document.getElementById("form");
-  const tracksContainer = document.getElementById("tracks");
-  const clearButton = document.getElementById("clear");
-  if (!form || !tracksContainer) return;
+  const { callApi, escapeHtml: esc } = window.App;
 
-  const fallbackTracks = [
-    ["M01", "Deep Sleep"],
-    ["M02", "Weightless"],
-    ["M03", "Rain Sounds"],
-    ["M04", "Piano for Relaxation"],
-    ["M05", "Nature Sounds"],
-    ["M06", "Focus Music"],
-    ["M07", "Deep Sleep"]
-  ];
+  const PREDICT_PATH = "/api/v1/models/music-recommender/predictions";
 
-  const resultElement = (() => {
-    let element = document.getElementById("result") ||
-      document.getElementById("results") ||
-      document.getElementById("output");
-    if (!element) {
-      element = document.createElement("div");
-      element.id = "result";
-      element.setAttribute("aria-live", "polite");
-      element.style.marginTop = "1rem";
-      form.insertAdjacentElement("afterend", element);
-    }
-    return element;
-  })();
+  // Must match the item names the rules were mined on (lookup_table["item_name"]).
+  // A name the API does not know is rejected with a clear 400 error, shown below.
+  const TRACKS = ["Workout Anthem", "Pump It Up", "Cardio Beats", "Study Focus 1", "Study Focus 2", "Rain Sounds",
+    "Deep Sleep", "Sunday Worship 1", "Sunday Worship 2", "Praise Medley", "Heartbreak Ballad", "Love Story",
+    "Hip Hop Anthem", "Street Beats", "Amapiano Vibes", "Gengetone Hit"];
 
-  function normalizeTrack(item) {
-    const id = item.track_id ?? item.id ?? "";
-    const name = item.track_name ?? item.item_name ?? item.product_name ?? item.name ?? "";
-    return { id: String(id), name: String(name) };
+  const $ = (id) => document.getElementById(id);
+  const errorBox = (message) => `<div class="error" role="alert">${esc(message)}</div>`;
+
+  function drawTracks() {
+    $("tracks").innerHTML = TRACKS.map((name) =>
+      `<label class="track"><input type="checkbox" value="${esc(name)}"> ${esc(name)}</label>`).join("");
   }
 
-  function drawTracks(items) {
-    tracksContainer.innerHTML = "";
-    const seen = new Set();
-
-    for (const item of items) {
-      const track = normalizeTrack(Array.isArray(item)
-        ? { track_id: item[0], track_name: item[1] }
-        : item);
-      if (!track.name || seen.has(track.name)) continue;
-      seen.add(track.name);
-
-      const label = document.createElement("label");
-      label.style.display = "block";
-      label.style.margin = "0.35rem 0";
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.name = "basket";
-      checkbox.value = track.name;
-      checkbox.dataset.trackId = track.id;
-      checkbox.style.marginRight = "0.5rem";
-
-      label.append(checkbox, document.createTextNode(track.name));
-      tracksContainer.appendChild(label);
-    }
+  function selectedTracks() {
+    return [...document.querySelectorAll("#tracks input:checked")].map((box) => box.value);
   }
 
-  async function loadTracks() {
+  function resultHtml(data) {
+    if (!data.recommendations || !data.recommendations.length) {
+      return `<div class="result empty"><b>No recommendation yet</b>
+        <div class="muted">We don't have a suggestion for this mix of tracks. Try adding another track or choosing different ones.</div></div>`;
+    }
+    return `<div class="result"><div class="muted">You might like next</div>` + data.recommendations.map((r) =>
+      `<div class="rec"><div class="big">${esc(r.product_name)}</div>` +
+      (r.because_you_played && r.because_you_played.length
+        ? `<div class="muted">Because you played ${r.because_you_played.map(esc).join(" + ")}</div>` : "") +
+      `</div>`).join("") + `</div>`;
+  }
+
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const out = $("result"), btn = $("form").querySelector("button[type=submit]"), basket = selectedTracks();
+    if (!basket.length) { out.innerHTML = errorBox("Pick at least one track."); return; }
+    btn.disabled = true; btn.textContent = "Working...";
     try {
-      // This endpoint must be implemented by the backend. If it is unavailable,
-      // the fallback list below will still let the page render.
-      const data = await window.App.callApi("/api/v1/tracks", undefined, { method: "GET" });
-      const items = Array.isArray(data) ? data : (data.tracks || data.items || []);
-      if (items.length) {
-        drawTracks(items);
-        return;
-      }
-    } catch (error) {
-      console.info("Could not load track list from API; using fallback list.", error.message);
-    }
-    drawTracks(fallbackTracks);
-  }
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const basket = Array.from(tracksContainer.querySelectorAll('input[name="basket"]:checked'))
-      .map((checkbox) => checkbox.value);
-
-    if (!basket.length) {
-      window.App.showMessage(resultElement, "Select at least one track before requesting recommendations.", "error");
-      return;
-    }
-
-    const topNField = form.querySelector('[name="top_n"]');
-    const topN = topNField && topNField.value.trim() ? Number(topNField.value) : 5;
-    if (!Number.isInteger(topN) || topN < 1) {
-      window.App.showMessage(resultElement, "Number of recommendations must be a positive whole number.", "error");
-      return;
-    }
-
-    const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
-    const originalText = submitButton
-      ? (submitButton.tagName === "INPUT" ? submitButton.value : submitButton.textContent)
-      : "";
-    if (submitButton) {
-      submitButton.disabled = true;
-      if (submitButton.tagName === "INPUT") submitButton.value = "Finding…";
-      else submitButton.textContent = "Finding…";
-    }
-
-    window.App.showMessage(resultElement, "Finding tracks…", "info");
-    try {
-      const data = await window.App.callApi(
-        "/api/v1/models/music-recommender/predictions",
-        { basket, top_n: topN }
-      );
-
-      const recommendations = Array.isArray(data.recommendations) ? data.recommendations : [];
-      if (!recommendations.length) {
-        window.App.showMessage(
-          resultElement,
-          data.message || "No recommendations were found for this selection.",
-          "info"
-        );
-        return;
-      }
-
-      const rows = recommendations.map((item) => `
-        <li>
-          <strong>${window.App.escapeHtml(item.product_name || item.track_name || item.track_id || "Recommended track")}</strong>
-          <div>Confidence: ${Number(item.confidence).toFixed(3)} · Lift: ${Number(item.lift).toFixed(2)} · Support: ${Number(item.support).toFixed(4)}</div>
-          ${Array.isArray(item.because_you_played) && item.because_you_played.length
-            ? `<div>Because you played: ${item.because_you_played.map(window.App.escapeHtml).join(", ")}</div>`
-            : ""}
-        </li>`).join("");
-
-      resultElement.innerHTML = `
-        <section class="prediction-result">
-          <h2>Recommended Tracks</h2>
-          <p>Based on: ${basket.map(window.App.escapeHtml).join(", ")}</p>
-          <ol>${rows}</ol>
-          <p>Model: ${window.App.escapeHtml(data.model || "Apriori association rules")}</p>
-        </section>`;
-      resultElement.style.color = "";
-    } catch (error) {
-      window.App.showMessage(resultElement, error.message || "Could not get recommendations.", "error");
+      const data = await callApi(PREDICT_PATH, { basket, top_n: 3 });
+      out.innerHTML = resultHtml(data);
+    } catch (err) {
+      out.innerHTML = errorBox(err.message);
     } finally {
-      if (submitButton) {
-        submitButton.disabled = false;
-        if (submitButton.tagName === "INPUT") submitButton.value = originalText;
-        else submitButton.textContent = originalText;
-      }
+      btn.disabled = false; btn.textContent = "Recommend";
     }
   });
 
-  if (clearButton) {
-    clearButton.addEventListener("click", () => {
-      tracksContainer.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
-        checkbox.checked = false;
-      });
-      resultElement.textContent = "";
-    });
-  }
+  $("clear").addEventListener("click", () => {
+    document.querySelectorAll("#tracks input").forEach((box) => { box.checked = false; });
+    $("result").innerHTML = "";
+  });
 
-  loadTracks();
+  drawTracks();
 })();

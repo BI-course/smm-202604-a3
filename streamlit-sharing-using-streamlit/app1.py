@@ -1,69 +1,54 @@
 import os
+import pickle
+
+import joblib
 import requests
 import streamlit as st
 
-# ============================================================
-# 1. APPLICATION CONFIGURATION
-# ============================================================
+
+@st.cache_resource
+def load_artifacts():
+    MODEL_DIR = "./model"
+
+    regression_pipeline = joblib.load(
+        os.path.join(MODEL_DIR, "randomforest_regressor_log1p_monthly_rent.joblib")
+    )
+    classification_pipeline = joblib.load(
+        os.path.join(MODEL_DIR, "svc_classifier_for_employee_attrition.joblib")
+    )
+    with open(os.path.join(MODEL_DIR, "association_rule_model.pkl"), "rb") as file:
+        arm_artifact = pickle.load(file)
+    clustering_artifact = joblib.load(
+        os.path.join(MODEL_DIR, "store_clustering_model.pkl")
+    )
+    return (
+        regression_pipeline,
+        classification_pipeline,
+        clustering_artifact,
+        arm_artifact,
+    )
+
+
+regression_pipeline, classification_pipeline, clustering_artifact, arm_artifact = load_artifacts()
+
+clustering_scaler = clustering_artifact["scaler"]
+clustering_kmeans = clustering_artifact["kmeans"]
+recommendation_lookup = arm_artifact["recommendation_lookup"]
+lookup_table = arm_artifact["lookup_table"]
 
 st.set_page_config(
-    page_title="Group ML Models",
-    page_icon="📊",
-    layout="wide",
+    page_title="Group A3 Model Validation Demos",
+    page_icon="\U0001F4CA",
+    layout="centered",
 )
+st.title("Group A3 -- Model Validation Demos")
 
-DEFAULT_API_URL = "http://127.0.0.1:5000"
-
-API_BASE = st.sidebar.text_input(
-    "Flask API URL",
-    value=os.getenv("API_BASE_URL", DEFAULT_API_URL),
-    help="Base URL where the Flask API is running.",
-).strip().rstrip("/")
-
-st.title("Group Machine Learning Models")
-st.caption("Streamlit frontend connected to the Flask API.")
-
-
-# ============================================================
-# 2. SHARED FUNCTIONS
-# ============================================================
-
-def post_prediction(endpoint: str, payload: dict):
-    """Send prediction requests to the Flask API."""
-    try:
-        response = requests.post(
-            f"{API_BASE}{endpoint}",
-            json=payload,
-            timeout=30,
-        )
-    except requests.RequestException as exc:
-        st.error(f"Could not connect to the Flask API: {exc}")
-        return None
-
-    try:
-        data = response.json()
-    except ValueError:
-        data = {"error": response.text or "Invalid API response."}
-
-    if not response.ok:
-        st.error(data.get("error", f"API error: {response.status_code}"))
-        return None
-
-    return data
-
-
-# ============================================================
-# 3. APPLICATION TABS
-# ============================================================
-
-tab_rent, tab_attrition, tab_stores, tab_music = st.tabs(
-    [
-        "Rent Prediction",
-        "Employee Attrition",
-        "Store Segmentation",
-        "Music Recommendation",
-    ]
-)
+tab_rent, tab_attrition, tab_stores, tab_music = st.tabs([
+    "Predict Rent",
+    "Employee Attrition Classifier",
+    "Store Segmenter",
+    "Music Recommender",
+])
 
 
 # ============================================================
@@ -71,8 +56,6 @@ tab_rent, tab_attrition, tab_stores, tab_music = st.tabs(
 # ============================================================
 
 with tab_rent:
-
-    
     pass
 
 
@@ -81,8 +64,6 @@ with tab_rent:
 # ============================================================
 
 with tab_attrition:
-
-    
     pass
 
 
@@ -91,22 +72,19 @@ with tab_attrition:
 # ============================================================
 
 with tab_stores:
-
-    
     pass
 
 
 # ============================================================
-#MUSIC RECOMMENDATION TAB
+# MUSIC RECOMMENDATION TAB
 # ============================================================
 
 with tab_music:
-
-       pass
+    pass
 
 
 # ============================================================
-# 8. APPLICATION FOOTER
+# APPLICATION FOOTER
 # ============================================================
 
 st.divider()

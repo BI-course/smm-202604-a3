@@ -50,6 +50,27 @@ tab_rent, tab_attrition, tab_stores, tab_music = st.tabs([
     "Music Recommender",
 ])
 
+DEFAULT_API_URL = "http://127.0.0.1:5000"
+
+API_BASE = st.sidebar.text_input(
+    "Flask API URL",
+    value=DEFAULT_API_URL
+).rstrip("/")
+
+def post_prediction(endpoint, payload):
+    try:
+        response = requests.post(
+            f"{API_BASE}{endpoint}",
+            json=payload,
+            timeout=30
+        )
+
+        response.raise_for_status()
+        return response.json()
+
+    except requests.exceptions.RequestException as error:
+        st.error(f"API request failed: {error}")
+        return None
 
 # ============================================================
 # RENT PREDICTION TAB
@@ -72,8 +93,81 @@ with tab_attrition:
 # ============================================================
 
 with tab_stores:
-    pass
+    with tab_stores:
+        st.header("Store Segmentation")
+        st.write(
+            "Enter the store's operational and financial details "
+            "to determine its segment."
+        )
 
+        with st.form("store_segmentation_form"):
+            c1, c2, c3 = st.columns(3)
+
+            with c1:
+                monthly_revenue_kes = st.number_input(
+                    "Monthly Revenue (KES)",
+                    value=0.0
+                )
+
+                daily_foot_traffic = st.number_input(
+                    "Daily Foot Traffic",
+                    value=0,
+                    step=1
+                )
+
+            with c2:
+                staff_count = st.number_input(
+                    "Number of Staff",
+                    value=0,
+                    step=1
+                )
+
+                store_size_sqm = st.number_input(
+                    "Store Size (Square Metres)",
+                    value=0.0
+                )
+
+            with c3:
+                avg_basket_size_kes = st.number_input(
+                    "Average Basket Size (KES)",
+                    value=0.0
+                )
+
+            submitted = st.form_submit_button(
+                "Predict Store Segment",
+                use_container_width=True
+            )
+
+        if submitted:
+            payload = {
+                "monthly_revenue_kes": monthly_revenue_kes,
+                "daily_foot_traffic": daily_foot_traffic,
+                "staff_count": staff_count,
+                "store_size_sqm": store_size_sqm,
+                "avg_basket_size_kes": avg_basket_size_kes
+            }
+
+            if any(value <= 0 for value in payload.values()):
+                st.warning("Please enter values greater than zero.")
+            else:
+                data = post_prediction(
+                    "/api/v1/models/kmeans-store-segmentation/predictions",
+                    payload
+                )
+
+                if data:
+                    st.success("Store segmentation completed!")
+
+                    st.metric(
+                        "Assigned Cluster",
+                        data["assigned_cluster"]
+                    )
+
+                    st.subheader("Store Segment")
+                    st.write(data["segment_name"])
+
+                    with st.expander("View API Response"):
+                        st.json(data)
 
 # ============================================================
 # MUSIC RECOMMENDATION TAB

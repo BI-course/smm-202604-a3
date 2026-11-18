@@ -77,7 +77,127 @@ def post_prediction(endpoint, payload):
 # ============================================================
 
 with tab_rent:
-    pass
+    st.header("Rental Price Prediction")
+    st.write("Enter the property details to estimate its monthly rental price.")
+
+    with st.form("rent_prediction_form"):
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+            neighborhood = st.selectbox(
+                "Neighborhood",
+                [
+                    "Kilimani",
+                    "Kileleshwa",
+                    "Lavington",
+                    "Karen",
+                    "Westlands",
+                    "Ngong Road",
+                    "Syokimau",
+                    "South B"
+                ]
+            )
+
+            property_type = st.selectbox(
+                "Property Type",
+                [
+                    "Apartment",
+                    "Townhouse",
+                    "Masionette",
+                    "Bungalow"
+                ]
+            )
+
+            furnishing_status = st.selectbox(
+                "Furnishing",
+                [
+                    "Unfurnished",
+                    "Semi-Furnished",
+                    "Fully Furnished"
+                ]
+            )
+
+            size_sqm = st.number_input(
+                "Property Size (sqm)", min_value=1.0, value=50.0
+            )
+
+        with c2:
+            num_bedrooms = st.number_input(
+                "Number of Bedrooms", min_value=0, value=1, step=1
+            )
+
+            num_bathrooms = st.number_input(
+                "Number of Bathrooms", min_value=0, value=1, step=1
+            )
+
+            distance_to_cbd_km = st.number_input(
+                "Distance to CBD (km)", min_value=0.0, value=5.0
+            )
+
+            property_age_years = st.number_input(
+                "Property Age (years)", min_value=0, value=5, step=1
+            )
+
+        with c3:
+            service_charge_kes = st.number_input(
+                "Service Charge (KES)", min_value=0.0, value=0.0
+            )
+
+            amenities_score = st.number_input(
+                "Amenities Score", min_value=0.0, value=5.0
+            )
+
+            nearby_schools_count = st.number_input(
+                "Nearby Schools", min_value=0, value=2, step=1
+            )
+
+            garage_size_sqm = st.number_input(
+                "Garage Size (sqm)", min_value=0.0, value=0.0
+            )
+
+            security_rating = st.number_input(
+                "Security Rating", min_value=0.0, value=5.0
+            )
+
+        submitted = st.form_submit_button(
+            "Predict Rental Price",
+            use_container_width=True
+        )
+
+    if submitted:
+        payload = {
+            "property_type": property_type,
+            "neighborhood": neighborhood,
+            "furnishing_status": furnishing_status,
+            "size_sqm": size_sqm,
+            "num_bedrooms": num_bedrooms,
+            "num_bathrooms": num_bathrooms,
+            "distance_to_cbd_km": distance_to_cbd_km,
+            "property_age_years": property_age_years,
+            "service_charge_kes": service_charge_kes,
+            "amenities_score": amenities_score,
+            "nearby_schools_count": nearby_schools_count,
+            "garage_size_sqm": garage_size_sqm,
+            "security_rating": security_rating
+        }
+
+        data = post_prediction(
+            "/api/v1/models/rent-prediction-regressor/predictions",
+            payload
+        )
+
+        if data:
+            st.success("Rental price prediction completed!")
+
+            if "predicted_monthly_rent_kes" in data:
+                st.metric(
+                    "Predicted Monthly Rent",
+                    money_kes(data["predicted_monthly_rent_kes"])
+                )
+
+            with st.expander("View API Response"):
+                st.json(data)
+
 
 
 # ============================================================

@@ -246,6 +246,70 @@ with gr.Blocks(title="Group a3 Model Validation Demos") as demo:
 
     # --------------------------------------------------
     # 2. EMPLOYEE ATTRITION CLASSIFIER
+    with gr.Tab("Employee Attrition Classifier"):
+        gr.Interface(
+            fn=predict_employee_attrition,
+            inputs=[
+                gr.Dropdown(
+                    label="Department",
+                    choices=[
+                        "Operations",
+                        "Finance",
+                        "HR",
+                        "Engineering",
+                        "Sales"
+                    ],
+                    value="Engineering"
+                ),
+
+                gr.Dropdown(
+                    label="Job Role Level",
+                    choices=[
+                        "Junior",
+                        "Mid",
+                        "Senior",
+                        "Lead"
+                    ],
+                    value="Mid"
+                ),
+
+                gr.Dropdown(
+                    label="Education Level",
+                    choices=[
+                        "Diploma",
+                        "Bachelor's",
+                        "Master's",
+                        "PHD"
+                    ],
+                    value="Bachelor's"
+                ),
+
+                gr.Dropdown(
+                    label="Performance Rating",
+                    choices=[
+                        "Low",
+                        "Average",
+                        "High",
+                        "Outstanding"
+                    ],
+                    value="High"
+                ),
+
+                gr.Number(label="Years at Company", value=4),
+                gr.Number(label="Years Since Last Promotion", value=2),
+                gr.Number(label="Monthly Salary (KES)", value=85000),
+                gr.Number(label="Overtime Hours per Month", value=15),
+                gr.Number(label="Job Satisfaction Score", value=3),
+                gr.Number(label="Work-Life Balance Score", value=3),
+                gr.Number(label="Distance from Home (km)", value=12),
+                gr.Number(label="Number of Previous Companies", value=2),
+                gr.Number(label="Remote Work Days per Week", value=2),
+                gr.Number(label="Bonus Amount (KES)", value=15000)
+            ],
+            outputs=gr.Textbox(
+                label="Predicted Employee Attrition Category"
+            ),
+        )
     # --------------------------------------------------
 
     # --------------------------------------------------

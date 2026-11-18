@@ -205,7 +205,159 @@ with tab_rent:
 # ============================================================
 
 with tab_attrition:
-    pass
+    st.header("Employee Attrition Prediction")
+    st.write(
+        "Enter employee information to predict the employee attrition category."
+    )
+
+    with st.form("attrition_prediction_form"):
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+            department = st.selectbox(
+                "Department",
+                [
+                    "Operations",
+                    "Finance",
+                    "HR",
+                    "Engineering",
+                    "Sales"
+                ]
+            )
+
+            job_role_level = st.selectbox(
+                "Job Role",
+                [
+                    "Mid",
+                    "Junior",
+                    "Senior",
+                    "Lead"
+                ]
+            )
+
+            education_level = st.selectbox(
+                "Education",
+                [
+                    "Diploma",
+                    "Bachelor's",
+                    "Master's",
+                    "PHD"
+                ]
+            )
+
+            performance_rating = st.selectbox(
+                "Performance Rating",
+                [
+                    "Average",
+                    "Low",
+                    "High",
+                    "Outstanding"
+                ]
+            )
+
+        with c2:
+            years_at_company = st.number_input(
+                "Years at Company", min_value=0.0, value=2.0
+            )
+
+            years_since_last_promotion = st.number_input(
+                "Years Since Last Promotion", min_value=0.0, value=1.0
+            )
+
+            monthly_salary_kes = st.number_input(
+                "Monthly Salary (KES)", min_value=0.0, value=30000.0
+            )
+
+            overtime_hours_per_month = st.number_input(
+                "Overtime Hours per Month", min_value=0.0, value=0.0
+            )
+
+        with c3:
+            job_satisfaction_score = st.number_input(
+                "Job Satisfaction Score",
+                min_value=1.0,
+                max_value=5.0,
+                value=3.0
+            )
+
+            distance_from_home_km = st.number_input(
+                "Distance from Home (km)", min_value=0.0, value=5.0
+            )
+
+            num_companies_worked_previously = st.number_input(
+                "Previous Companies Worked For",
+                min_value=0,
+                value=1,
+                step=1
+            )
+
+            remote_work_days_per_week = st.number_input(
+                "Remote Work Days per Week",
+                min_value=0,
+                max_value=7,
+                value=0,
+                step=1
+            )
+
+        st.subheader("Additional Information")
+
+        c4, c5 = st.columns(2)
+
+        with c4:
+            work_life_balance_score = st.number_input(
+                "Work-Life Balance Score",
+                min_value=1.0,
+                max_value=5.0,
+                value=3.0
+            )
+
+        with c5:
+            bonus_amount_kes = st.number_input(
+                "Bonus Amount (KES)",
+                min_value=0.0,
+                value=0.0
+            )
+
+        submitted = st.form_submit_button(
+            "Predict Employee Attrition",
+            use_container_width=True
+        )
+
+    if submitted:
+        payload = {
+            "department": department,
+            "job_role_level": job_role_level,
+            "education_level": education_level,
+            "performance_rating": performance_rating,
+            "years_at_company": years_at_company,
+            "years_since_last_promotion": years_since_last_promotion,
+            "monthly_salary_kes": monthly_salary_kes,
+            "overtime_hours_per_month": overtime_hours_per_month,
+            "job_satisfaction_score": job_satisfaction_score,
+            "distance_from_home_km": distance_from_home_km,
+            "num_companies_worked_previously": num_companies_worked_previously,
+            "remote_work_days_per_week": remote_work_days_per_week,
+            "work_life_balance_score": work_life_balance_score,
+            "bonus_amount_kes": bonus_amount_kes
+        }
+
+        data = post_prediction(
+            "/api/v1/models/employee-attrition-classifier/predictions",
+            payload
+        )
+
+        if data:
+            st.success("Employee attrition prediction completed!")
+
+            if "predicted_employee_attrition_category" in data:
+                st.metric(
+                    "Predicted Attrition Category",
+                    data["predicted_employee_attrition_category"]
+                )
+
+            with st.expander("View API Response"):
+                st.json(data)
+
 
 
 # ============================================================

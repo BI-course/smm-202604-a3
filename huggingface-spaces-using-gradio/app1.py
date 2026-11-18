@@ -189,6 +189,59 @@ with gr.Blocks(title="Group a3 Model Validation Demos") as demo:
 
     # --------------------------------------------------
     # 1. RENTAL PRICE REGRESSOR
+    with gr.Tab("Rental Price Regressor"):
+        gr.Interface(
+            fn=predict_rent,
+            inputs=[
+                gr.Number(label="Property Age (years)", value=5),
+                gr.Number(label="Property Size (sqm)", value=120),
+                gr.Number(label="Number of Bedrooms", value=3),
+                gr.Number(label="Number of Bathrooms", value=2),
+                gr.Number(label="Distance to CBD (km)", value=8),
+                gr.Number(label="Service Charge (KES)", value=5000),
+                gr.Number(label="Garage Size (sqm)", value=20),
+                gr.Number(label="Security Rating", value=4),
+                gr.Number(label="Amenities Score", value=8),
+                gr.Number(label="Nearby Schools Count", value=3),
+
+                gr.Dropdown(
+                    label="Property Type",
+                    choices=[
+                        "Apartment",
+                        "Townhouse",
+                        "Masionette",
+                        "Bungalow"
+                    ],
+                    value="Apartment"
+                ),
+
+                gr.Dropdown(
+                    label="Neighbourhood",
+                    choices=[
+                        "Kilimani",
+                        "Kileleshwa",
+                        "Lavington",
+                        "Karen",
+                        "Westlands",
+                        "Ngong Road",
+                        "Syokimau",
+                        "South B"
+                    ],
+                    value="Kilimani"
+                ),
+
+                gr.Dropdown(
+                    label="Furnishing Status",
+                    choices=[
+                        "Unfurnished",
+                        "Semi-Furnished",
+                        "Fully Furnished"
+                    ],
+                    value="Semi-Furnished"
+                )
+            ],
+            outputs=gr.Textbox(label="Predicted Monthly Rent"),
+        )
     # --------------------------------------------------
 
     # --------------------------------------------------

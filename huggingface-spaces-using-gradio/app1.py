@@ -315,6 +315,27 @@ with gr.Blocks(title="Group a3 Model Validation Demos") as demo:
     # --------------------------------------------------
     # 3. MUSIC RECOMMENDER
     # --------------------------------------------------
+    with gr.Tab("Music Recommender"):
+
+        gr.Interface(
+            fn=recommend_music,
+            inputs=[
+                gr.Textbox(
+                    label="Basket (comma-separated track names)",
+                    value="Deep Sleep",
+                    placeholder="e.g. Deep Sleep, Morning Energy"
+                ),
+
+                gr.Number(
+                    label="Number of Recommendations",
+                    value=5,
+                    precision=0
+                )
+            ],
+            outputs=gr.Textbox(
+                label="Recommended Music Tracks"
+            ),
+        )
 
     # --------------------------------------------------
     # 4. STORE CUSTOMER SEGMENTER

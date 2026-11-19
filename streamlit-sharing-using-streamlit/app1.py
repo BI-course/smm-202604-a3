@@ -445,8 +445,98 @@ with tab_stores:
 # MUSIC RECOMMENDATION TAB
 # ============================================================
 
+
 with tab_music:
-    pass
+    st.header("Music Recommendation")
+    st.write(
+        "Select the tracks you enjoy. The system will recommend "
+        "other tracks based on your selections."
+    )
+
+    TRACKS = [
+        "Workout Anthem",
+        "Pump It Up",
+        "Cardio Beats",
+        "Study Focus 1",
+        "Study Focus 2",
+        "Rain Sounds",
+        "Deep Sleep",
+        "Sunday Worship 1",
+        "Sunday Worship 2",
+        "Praise Medley",
+        "Heartbreak Ballad",
+        "Love Story",
+        "Hip Hop Anthem",
+        "Street Beats",
+        "Amapiano Vibes",
+        "Gengetone Hit"
+    ]
+
+    with st.form("music_recommendation_form"):
+        st.subheader("Select Your Tracks")
+
+        c1, c2, c3 = st.columns(3)
+        columns = [c1, c2, c3]
+
+        selected_tracks = []
+
+        for i, track in enumerate(TRACKS):
+            with columns[i % 3]:
+                if st.checkbox(track, key=f"music_track_{i}"):
+                    selected_tracks.append(track)
+
+        st.divider()
+
+        top_n = st.number_input(
+            "Number of Recommendations",
+            min_value=1,
+            max_value=10,
+            value=3,
+            step=1
+        )
+
+        submitted = st.form_submit_button(
+            "Get Recommendations",
+            use_container_width=True
+        )
+
+    if submitted:
+        if not selected_tracks:
+            st.warning("Please select at least one track.")
+        else:
+            payload = {
+                "basket": selected_tracks,
+                "top_n": int(top_n)
+            }
+
+            data = post_prediction(
+                "/api/v1/models/music-recommender/predictions",
+                payload
+            )
+
+            if data:
+                st.success("Music recommendations generated!")
+
+                recommendations = data.get("recommendations", [])
+
+                if recommendations:
+                    st.subheader("Recommended Tracks")
+
+                    for i, recommendation in enumerate(recommendations, 1):
+                        st.write(
+                            f"*{i}. {recommendation.get('product_name', 'Unknown track')}*"
+                        )
+
+                        because = recommendation.get("because_you_played")
+                        if because:
+                            st.caption(f"Because you played: {because}")
+                else:
+                    st.info(
+                        "No recommendations were found for the selected tracks."
+                    )
+
+                with st.expander("View API Response"):
+                    st.json(data)
 
 
 # ============================================================

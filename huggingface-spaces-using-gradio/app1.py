@@ -319,6 +319,40 @@ with gr.Blocks(title="Group a3 Model Validation Demos") as demo:
     # --------------------------------------------------
     # 4. STORE CUSTOMER SEGMENTER
     # --------------------------------------------------
+with gr.Tab("Store Customer Segmenter"):
+
+        gr.Interface(
+            fn=predict_store_segment,
+            inputs=[
+                gr.Number(
+                    label="Monthly Revenue (KES)",
+                    value=500000
+                ),
+
+                gr.Number(
+                    label="Daily Foot Traffic",
+                    value=150
+                ),
+
+                gr.Number(
+                    label="Staff Count",
+                    value=8
+                ),
+
+                gr.Number(
+                    label="Store Size (sqm)",
+                    value=100
+                ),
+
+                gr.Number(
+                    label="Average Basket Size (KES)",
+                    value=2500
+                )
+            ],
+            outputs=gr.Textbox(
+                label="Predicted Store Segment"
+            ),
+        )
 
 if __name__ == "__main__":
     demo.launch()

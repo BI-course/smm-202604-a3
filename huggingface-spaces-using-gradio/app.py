@@ -179,7 +179,7 @@ def predict_store_segment(monthly_revenue_kes, daily_foot_traffic,
     elif assigned_cluster == 5:
         cluster_names = "Mid-scale, near-average stores"
 
-    return f"Assigned Segment: Cluster{cluster_names}"
+    return f"Assigned Segment: Cluster {assigned_cluster}\n{cluster_names}"
 
 with gr.Blocks(title="Group a3 Model Validation Demos") as demo:
     gr.Markdown(
@@ -340,7 +340,7 @@ with gr.Blocks(title="Group a3 Model Validation Demos") as demo:
     # --------------------------------------------------
     # 4. STORE CUSTOMER SEGMENTER
     # --------------------------------------------------
-with gr.Tab("Store Customer Segmenter"):
+    with gr.Tab("Store Customer Segmenter"):
 
         gr.Interface(
             fn=predict_store_segment,

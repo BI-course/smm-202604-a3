@@ -368,7 +368,6 @@ with tab_attrition:
 # ============================================================
 
 with tab_stores:
-    with tab_stores:
         st.header("Store Segmentation")
         st.write(
             "Enter the store's operational and financial details "
@@ -381,31 +380,31 @@ with tab_stores:
             with c1:
                 monthly_revenue_kes = st.number_input(
                     "Monthly Revenue (KES)",
-                    value=0.0
+                    value=1200000.0
                 )
 
                 daily_foot_traffic = st.number_input(
                     "Daily Foot Traffic",
-                    value=0,
+                    value=400,
                     step=1
                 )
 
             with c2:
                 staff_count = st.number_input(
                     "Number of Staff",
-                    value=0,
+                    value=10,
                     step=1
                 )
 
                 store_size_sqm = st.number_input(
                     "Store Size (Square Metres)",
-                    value=0.0
+                    value=300.0
                 )
 
             with c3:
                 avg_basket_size_kes = st.number_input(
                     "Average Basket Size (KES)",
-                    value=0.0
+                    value=120.0
                 )
 
             submitted = st.form_submit_button(

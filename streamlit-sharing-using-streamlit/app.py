@@ -50,7 +50,7 @@ tab_rent, tab_attrition, tab_stores, tab_music = st.tabs([
     "Music Recommender",
 ])
 
-DEFAULT_API_URL = "http://127.0.0.1:5000"
+DEFAULT_API_URL = " https://smm-202604-a3-final.onrender.com"
 
 API_BASE = st.sidebar.text_input(
     "Flask API URL",

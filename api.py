@@ -173,7 +173,7 @@ def predict_customer_segment():
 
     return jsonify({
         "assigned_cluster": assigned_cluster,
-        "cluster_names": cluster_names,
+        "segment_name": cluster_names,
         "model": "K-Means (k=5, standardized features)",
     })
 

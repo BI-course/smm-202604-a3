@@ -32,9 +32,9 @@
 
 | **Details**                                                                                                                           | **Comment** |
 | :------------------------------------------------------------------------------------------------------------------------------------ | :---------- |
-| **Student ID**                                                                                                                        |             |
-| **Name**                                                                                                                              |             |
-| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
+| **Student ID**                                                                                                                        |153045             |
+| **Name**                                                                                                                              |Joshua Rakich Odhiambo             |
+| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** | GitHub Branch:[feature/rakich](https://github.com/BI-course/smm-202604-a3/tree/feature/rakich) <br><br> Files: styles.css, appstreamlit.py<br><br>What I did:<br>- Created the shared CSS stylesheet for the website. including navigation, cards, forms and responsive layouts.<br>- Set up the Streamlit application configuration, tabs and cached model loader.<br>- Created the shared API request helper used by the Streamlit frontend,<br><br> What I learnt:<br>- How to use CSS Grid, custom properties and dark mode.<br>- How to create responsive and accesible web designs.<br>- How Streamlit uses tabs, caching and forms.<br>- How to connect a Streamlit frontend to a Flask API             | 
 
 **Member 5:**
 

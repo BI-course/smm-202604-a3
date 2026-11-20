@@ -7,7 +7,7 @@
 **Member 1:**
 
 | **Details**                                                                                                                           | **Comment** |
-|:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
+| :------------------------------------------------------------------------------------------------------------------------------------ | :---------- |
 | **Student ID**                                                                                                                        |             |
 | **Name**                                                                                                                              |             |
 | **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
@@ -15,23 +15,23 @@
 **Member 2:**
 
 | **Details**                                                                                                                           | **Comment** |
-|:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
+| :------------------------------------------------------------------------------------------------------------------------------------ | :---------- |
 | **Student ID**                                                                                                                        |             |
 | **Name**                                                                                                                              |             |
 | **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
 
 **Member 3:**
 
-| **Details**                                                                                                                           | **Comment** |
-|:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
-| **Student ID**                                                                                                                        |             |
-| **Name**                                                                                                                              |             |
-| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
+| **Details**                                                                                                                           | **Comment**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| :------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Student ID**                                                                                                                        | 166585                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **Name**                                                                                                                              | Barbara Okere                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** | https://github.com/BI-course/smm-202604-a3/tree/feature/barb I implemented the K-Means store segmentation endpoint, which processes store data and assigns meaningful segment names. I also worked on the Gradio Music Recommendation tab, where I created dynamic track selection checkboxes and displayed recommendations based on user selections. Additionally, I configured the Flask application for local development and added a footer documenting data requirements. I also learnt about dependency management, Python library compatibility and preparing applications for deployment. |
 
 **Member 4:**
 
 | **Details**                                                                                                                           | **Comment** |
-|:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
+| :------------------------------------------------------------------------------------------------------------------------------------ | :---------- |
 | **Student ID**                                                                                                                        |             |
 | **Name**                                                                                                                              |             |
 | **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
@@ -39,7 +39,7 @@
 **Member 5:**
 
 | **Details**                                                                                                                           | **Comment** |
-|:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
+| :------------------------------------------------------------------------------------------------------------------------------------ | :---------- |
 | **Student ID**                                                                                                                        |             |
 | **Name**                                                                                                                              |             |
 | **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
@@ -69,7 +69,7 @@ Note that you are required to submit the link to the video and NOT the video its
 Fill in only the rows that apply to your chosen difficulty level (see Part C below). Leave a row blank if your tier does not require that deployment target.
 
 | **Deployment target**                             | **URL** |
-|:--------------------------------------------------|:--------|
+| :------------------------------------------------ | :------ |
 | Render (the full `api.py`, all endpoints)         |         |
 | Hugging Face Space (Gradio, one tab per model)    |         |
 | Streamlit Community Cloud app (one tab per model) |         |
@@ -133,7 +133,7 @@ Why this is production-relevant beyond the model itself:
 
 - **Portability:** the same container image and the same trained artifacts run unmodified on your laptop, inside Docker, and on a managed cloud host.
 - **Consistency:** no "but it works on my machine" gap between what you demo locally and what a domain expert sees on a public URL.
-- **Separation of concerns:** a REST API (Render), a no-code demo UI (Hugging Face/Streamlit), and your own frontend (the Advanced-tier HTML pages) are three different ways of exposing the *same* underlying models to three different kinds of user -- a developer integrating your API, a non-technical domain expert validating it, and an end customer.
+- **Separation of concerns:** a REST API (Render), a no-code demo UI (Hugging Face/Streamlit), and your own frontend (the Advanced-tier HTML pages) are three different ways of exposing the _same_ underlying models to three different kinds of user -- a developer integrating your API, a non-technical domain expert validating it, and an end customer.
 
 ---
 

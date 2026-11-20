@@ -38,11 +38,11 @@
 
 **Member 5:**
 
-| **Details**                                                                                                                           | **Comment** |
-|:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
-| **Student ID**                                                                                                                        |             |
-| **Name**                                                                                                                              |             |
-| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
+| **Details**                                                                                                                           | **Comment**                                                                                                                                                                                                                                                                                                                                        |
+|:--------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Student ID**                                                                                                                        | 147115                                                                                                                                                                                                                                                                                                                                             |
+| **Name**                                                                                                                              | Serena Isendi                                                                                                                                                                                                                                                                                                                                      |
+| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** | https://github.com/BI-course/smm-202604-a3/tree/feature/isendi I built the shared frontend helper library (app.js) providing API calls, form handling, validation, escaping, and messaging via window.App, created the landing page (index.html) summarizing the four ML models, and developed the employee attrition classifier page (attrition.html/attrition.js) with 14 inputs and class probability output. |
 
 ## Chosen Level of Difficulty
 

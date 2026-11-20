@@ -2,222 +2,377 @@ import gradio as gr
 import joblib
 import numpy as np
 import pandas as pd
+import pickle
 import spaces
 
-# -----------------------------------------------------------------------
-# Hugging Face's free tier now provisions new Gradio Spaces on ZeroGPU
-# hardware only (see the note in Step 2 below). None of this app's four
-# models needs a GPU -- every prediction below runs on plain scikit-learn
-# arrays -- but some free-tier Spaces fail to start reliably unless at
-# least one function is decorated with @spaces.GPU. This function does
-# nothing GPU-related; it exists only to satisfy that platform check.
-# Calling it once, here, registers it before Gradio launches below.
+
 @spaces.GPU
 def _warm_zerogpu():
     return None
 
+
 _warm_zerogpu()
 
-# -----------------------------------------------------------------------
-# Load all four persisted artifacts ONCE, at import time -- the same
-# principle api.py uses: load once at startup, reuse across every request
-# (here, across every tab and every submit click), never inside a function.
-# -----------------------------------------------------------------------
-regression_pipeline = joblib.load("lasso_regressor_for_sme_revenue.joblib")
-classification_pipeline = joblib.load("svc_classifier_for_sme_credit_risk.joblib")
+regression_pipeline = joblib.load(
+    "randomforest_regressor_log1p_monthly_rent.joblib"
+)
 
-clustering_artifact = joblib.load("kmeans_mall_customer_segmentation.joblib")
+classification_pipeline = joblib.load(
+    "svc_classifier_for_employee_attrition.joblib"
+)
+
+with open("association_rule_model.pkl", "rb") as file:
+    arm_artifact = pickle.load(file)
+
+recommendation_lookup = arm_artifact["recommendation_lookup"]
+lookup_table = arm_artifact["lookup_table"]
+
+clustering_artifact = joblib.load("store_clustering_model.pkl")
 clustering_scaler = clustering_artifact["scaler"]
 clustering_kmeans = clustering_artifact["kmeans"]
 
-arm_artifact = joblib.load("apriori_recommendation_rules.joblib")
-recommendation_lookup = arm_artifact["recommendation_lookup"]
-sku_lookup = arm_artifact["sku_lookup"]
+
+def jsonify(param):
+    pass
 
 
-# -----------------------------------------------------------------------
-# 1. Regression -- predict monthly revenue (KES) for an SME
-# -----------------------------------------------------------------------
-def predict_revenue(sector, county, quarter, business_age_years, num_employees,
-                     owner_education_level, monthly_marketing_spend_kes,
-                     avg_daily_foot_traffic, online_presence_score,
-                     loan_amount_kes, interest_rate_pct, inflation_rate_pct,
-                     competitor_density, customer_satisfaction_score):
+def error(message, status=400):
+    return jsonify({"error": message}), status
+
+
+def predict_rent(property_age_years, size_sqm, num_bedrooms, num_bathrooms, distance_to_cbd_km, service_charge_kes,
+                garage_size_sqm, security_rating, amenities_score, nearby_schools_count, property_type, neighborhood,
+                furnishing_status):
+
     payload = {
-        "sector": sector, "county": county, "quarter": quarter,
-        "business_age_years": business_age_years, "num_employees": num_employees,
-        "owner_education_level": owner_education_level,
-        "monthly_marketing_spend_kes": monthly_marketing_spend_kes,
-        # A Gradio Number field cannot submit a literal null; 0 is used here
-        # as a stand-in for "not applicable" when the field is left blank.
-        "avg_daily_foot_traffic": avg_daily_foot_traffic or None,
-        "online_presence_score": online_presence_score,
-        "loan_amount_kes": loan_amount_kes, "interest_rate_pct": interest_rate_pct,
-        "inflation_rate_pct": inflation_rate_pct,
-        "competitor_density": competitor_density,
-        "customer_satisfaction_score": customer_satisfaction_score,
+        "property_age_years": property_age_years,
+        "size_sqm": size_sqm,
+        "num_bedrooms": num_bedrooms,
+        "num_bathrooms": num_bathrooms,
+        "distance_to_cbd_km": distance_to_cbd_km,
+        "service_charge_kes": service_charge_kes,
+        "garage_size_sqm": garage_size_sqm or None,
+        "security_rating": security_rating or None,
+        "amenities_score": amenities_score,
+        "nearby_schools_count": nearby_schools_count,
+
+        "property_type": property_type,
+        "neighborhood": neighborhood,
+        "furnishing_status": furnishing_status
     }
+
     input_row = pd.DataFrame([payload])
-    predicted_log_revenue = regression_pipeline.predict(input_row)[0]
-    predicted_revenue_kes = float(np.expm1(predicted_log_revenue))
-    return f"KES {predicted_revenue_kes:,.2f} / month"
+    predicted_log_rent = regression_pipeline.predict(input_row)[0]
+    predicted_rent = float(np.expm1(predicted_log_rent))
+    return f"KES {predicted_rent:,.2f} / month"
 
 
-# -----------------------------------------------------------------------
-# 2. Classification -- predict SME credit risk category
-# -----------------------------------------------------------------------
-def predict_credit_risk(sector, county, quarter, loan_purpose, owner_education_level,
-                         business_age_years, num_employees, monthly_revenue_kes,
-                         loan_amount_kes, loan_term_months, interest_rate_pct,
-                         collateral_value_kes, debt_to_income_ratio, credit_score,
-                         num_previous_loans, missed_payments_count,
-                         online_presence_score, customer_satisfaction_score,
-                         competitor_density):
+def predict_employee_attrition(department, job_role_level, education_level,
+                               performance_rating, years_at_company,
+                               years_since_last_promotion, monthly_salary_kes,
+                               overtime_hours_per_month, job_satisfaction_score,
+                               work_life_balance_score, distance_from_home_km,
+                               num_companies_worked_previously,
+                               remote_work_days_per_week, bonus_amount_kes):
     payload = {
-        "sector": sector, "county": county, "quarter": quarter,
-        "loan_purpose": loan_purpose, "owner_education_level": owner_education_level,
-        "business_age_years": business_age_years, "num_employees": num_employees,
-        "monthly_revenue_kes": monthly_revenue_kes, "loan_amount_kes": loan_amount_kes,
-        "loan_term_months": loan_term_months, "interest_rate_pct": interest_rate_pct,
-        "collateral_value_kes": collateral_value_kes or None,
-        "debt_to_income_ratio": debt_to_income_ratio, "credit_score": credit_score,
-        "num_previous_loans": num_previous_loans,
-        "missed_payments_count": missed_payments_count,
-        "online_presence_score": online_presence_score,
-        "customer_satisfaction_score": customer_satisfaction_score,
-        "competitor_density": competitor_density,
+        "department": department,
+        "job_role_level": job_role_level,
+        "education_level": education_level,
+        "performance_rating": performance_rating,
+        "years_at_company": years_at_company,
+        "years_since_last_promotion": years_since_last_promotion,
+        "monthly_salary_kes": monthly_salary_kes,
+        "overtime_hours_per_month": overtime_hours_per_month,
+        "job_satisfaction_score": job_satisfaction_score,
+        "work_life_balance_score": work_life_balance_score,
+        "distance_from_home_km": distance_from_home_km,
+        "num_companies_worked_previously": num_companies_worked_previously,
+        "remote_work_days_per_week": remote_work_days_per_week,
+        "bonus_amount_kes": bonus_amount_kes or None,
     }
+
     input_row = pd.DataFrame([payload])
+
     predicted_class = classification_pipeline.predict(input_row)[0]
     predicted_probabilities = classification_pipeline.predict_proba(input_row)[0]
+
     class_labels = classification_pipeline.named_steps["model"].classes_
+
     probability_lines = "\n".join(
-        f"  {label}: {prob:.1%}" for label, prob in zip(class_labels, predicted_probabilities)
+        f"  {label}: {prob:.1%}"
+        for label, prob in zip(class_labels, predicted_probabilities)
     )
-    return f"Predicted category: {predicted_class}\n\n{probability_lines}"
+
+    return f"Predicted_employee_attrition_category: {predicted_class}\n\n{probability_lines}"
 
 
-# -----------------------------------------------------------------------
-# 3. Clustering -- assign a new mall customer to an existing segment
-# -----------------------------------------------------------------------
-def predict_segment(age, annual_income_k, spending_score):
-    input_row = pd.DataFrame([{
-        "Age": age,
-        "Annual Income (k$)": annual_income_k,
-        "Spending Score (1-100)": spending_score,
-    }])
-    scaled_input = clustering_scaler.transform(input_row)
-    cluster = int(clustering_kmeans.predict(scaled_input)[0])
-    return f"Assigned segment: Cluster {cluster}"
+def recommend_music(basket_text, top_n):
+    basket = {track.strip() for track in basket_text.split(",") if track.strip()}
 
-
-# -----------------------------------------------------------------------
-# 4. Association Rule Mining -- recommend products for a shopping cart
-# -----------------------------------------------------------------------
-def recommend_products(cart_text, top_n):
-    cart = {sku.strip() for sku in cart_text.split(",") if sku.strip()}
     candidates = {}
-    for antecedent, consequent_list in recommendation_lookup.items():
-        if antecedent.issubset(cart):
-            for sku, confidence, lift in consequent_list:
-                if sku not in cart:
-                    if sku not in candidates or confidence > candidates[sku][0]:
-                        candidates[sku] = (confidence, lift)
 
-    ranked = sorted(candidates.items(), key=lambda item: item[1][0], reverse=True)[:int(top_n)]
+    for antecedent, rule_list in recommendation_lookup.items():
+        if antecedent.issubset(basket):
+            for rule in rule_list:
+                for track in rule["consequents"]:
+                    if track not in basket:
+                        if track not in candidates or rule["confidence"] > candidates[track][0]:
+                            candidates[track] = (
+                                rule["confidence"],
+                                rule["lift"],
+                                rule["support"]
+                            )
+
+    ranked = sorted(
+        candidates.items(),
+        key=lambda item: (item[1][0], item[1][1]),
+        reverse=True
+    )[:int(top_n)]
+
     if not ranked:
-        return "No recommendations for this cart -- try a SKU combination seen in the training orders."
+        return "No recommendations for this basket -- try a combination of tracks seen in the training data."
 
     lines = [
-        f"{sku_lookup.loc[sku, 'product_name']} ({sku})  --  "
-        f"confidence {confidence:.1%}, lift {lift:.2f}"
-        for sku, (confidence, lift) in ranked
+        f"{track}  --  confidence {confidence:.1%}, lift {lift:.2f}, support {support:.4f}"
+        for track, (confidence, lift, support) in ranked
     ]
+
     return "\n".join(lines)
 
 
-# -----------------------------------------------------------------------
-# One gr.Blocks() app, four gr.Tab()s -- one shared Space URL, no linking
-# between separately-hosted demos required.
-# -----------------------------------------------------------------------
-with gr.Blocks(title="BBT 4206 Model Validation Demos") as demo:
-    gr.Markdown("# BBT 4206 -- Model Validation Demos\nSwitch tabs to try a different model.")
+def predict_store_segment(monthly_revenue_kes, daily_foot_traffic,
+                          staff_count, store_size_sqm, avg_basket_size_kes):
+    payload = {
+        "monthly_revenue_kes": monthly_revenue_kes,
+        "daily_foot_traffic": daily_foot_traffic,
+        "staff_count": staff_count,
+        "store_size_sqm": store_size_sqm,
+        "avg_basket_size_kes": avg_basket_size_kes
+    }
 
-    with gr.Tab("SME Revenue Regressor"):
+    feature_cols = clustering_artifact["features"]
+
+    input_row = pd.DataFrame(
+        [[payload.get(feature) for feature in feature_cols]],
+        columns=feature_cols
+    )
+
+    scaled_values = clustering_scaler.transform(input_row)
+
+    scaled_input = pd.DataFrame(
+        scaled_values,
+        columns=feature_cols
+    )
+    cluster_id = int(clustering_kmeans.predict(scaled_input)[0])
+
+    assigned_cluster = cluster_id + 1
+    cluster_names = ""
+
+    if assigned_cluster == 1:
+        cluster_names = "Smaller, lower-volume stores"
+    elif assigned_cluster == 2:
+        cluster_names = "Large, high-volume stores"
+    elif assigned_cluster == 3:
+        cluster_names = "High-traffic, low-basket stores"
+    elif assigned_cluster == 4:
+        cluster_names = "Low-traffic, high-basket stores"
+    elif assigned_cluster == 5:
+        cluster_names = "Mid-scale, near-average stores"
+
+    return f"Assigned Segment: Cluster {assigned_cluster}\n{cluster_names}"
+
+with gr.Blocks(title="Group a3 Model Validation Demos") as demo:
+    gr.Markdown(
+        "# Group a3 – Model Validation Demos\n"
+        "Switch between tabs to test the four machine-learning models."
+    )
+
+    # --------------------------------------------------
+    # 1. RENTAL PRICE REGRESSOR
+    with gr.Tab("Rental Price Regressor"):
         gr.Interface(
-            fn=predict_revenue,
+            fn=predict_rent,
             inputs=[
-                gr.Textbox(label="Sector", value="Technology"),
-                gr.Textbox(label="County", value="Nairobi"),
-                gr.Textbox(label="Quarter", value="Q3"),
-                gr.Number(label="Business Age (years)", value=4.5),
-                gr.Number(label="Number of Employees", value=12),
-                # These four categories are the exact set the pipeline's
-                # OrdinalEncoder was fitted on -- any other string raises
-                # "Found unknown categories" at predict time.
-                gr.Dropdown(label="Owner Education Level",
-                            choices=["Primary", "Secondary", "Tertiary", "Postgraduate"],
-                            value="Secondary"),
-                gr.Number(label="Monthly Marketing Spend (KES)", value=45000),
-                gr.Number(label="Avg Daily Foot Traffic (leave 0 if not applicable)", value=0),
-                gr.Number(label="Online Presence Score", value=78.0),
-                gr.Number(label="Loan Amount (KES)", value=250000),
-                gr.Number(label="Interest Rate (%)", value=14.5),
-                gr.Number(label="Inflation Rate (%)", value=6.5),
-                gr.Number(label="Competitor Density", value=5),
-                gr.Number(label="Customer Satisfaction Score", value=4.2),
+                gr.Number(label="Property Age (years)", value=5),
+                gr.Number(label="Property Size (sqm)", value=120),
+                gr.Number(label="Number of Bedrooms", value=3),
+                gr.Number(label="Number of Bathrooms", value=2),
+                gr.Number(label="Distance to CBD (km)", value=8),
+                gr.Number(label="Service Charge (KES)", value=5000),
+                gr.Number(label="Garage Size (sqm)", value=20),
+                gr.Number(label="Security Rating", value=4),
+                gr.Number(label="Amenities Score", value=8),
+                gr.Number(label="Nearby Schools Count", value=3),
+
+                gr.Dropdown(
+                    label="Property Type",
+                    choices=[
+                        "Apartment",
+                        "Townhouse",
+                        "Masionette",
+                        "Bungalow"
+                    ],
+                    value="Apartment"
+                ),
+
+                gr.Dropdown(
+                    label="Neighbourhood",
+                    choices=[
+                        "Kilimani",
+                        "Kileleshwa",
+                        "Lavington",
+                        "Karen",
+                        "Westlands",
+                        "Ngong Road",
+                        "Syokimau",
+                        "South B"
+                    ],
+                    value="Kilimani"
+                ),
+
+                gr.Dropdown(
+                    label="Furnishing Status",
+                    choices=[
+                        "Unfurnished",
+                        "Semi-Furnished",
+                        "Fully Furnished"
+                    ],
+                    value="Semi-Furnished"
+                )
             ],
-            outputs=gr.Textbox(label="Predicted Monthly Revenue"),
+            outputs=gr.Textbox(label="Predicted Monthly Rent"),
+        )
+    # --------------------------------------------------
+
+    # --------------------------------------------------
+    # 2. EMPLOYEE ATTRITION CLASSIFIER
+    with gr.Tab("Employee Attrition Classifier"):
+        gr.Interface(
+            fn=predict_employee_attrition,
+            inputs=[
+                gr.Dropdown(
+                    label="Department",
+                    choices=[
+                        "Operations",
+                        "Finance",
+                        "HR",
+                        "Engineering",
+                        "Sales"
+                    ],
+                    value="Engineering"
+                ),
+
+                gr.Dropdown(
+                    label="Job Role Level",
+                    choices=[
+                        "Junior",
+                        "Mid",
+                        "Senior",
+                        "Lead"
+                    ],
+                    value="Mid"
+                ),
+
+                gr.Dropdown(
+                    label="Education Level",
+                    choices=[
+                        "Diploma",
+                        "Bachelor's",
+                        "Master's",
+                        "PHD"
+                    ],
+                    value="Bachelor's"
+                ),
+
+                gr.Dropdown(
+                    label="Performance Rating",
+                    choices=[
+                        "Low",
+                        "Average",
+                        "High",
+                        "Outstanding"
+                    ],
+                    value="High"
+                ),
+
+                gr.Number(label="Years at Company", value=4),
+                gr.Number(label="Years Since Last Promotion", value=2),
+                gr.Number(label="Monthly Salary (KES)", value=85000),
+                gr.Number(label="Overtime Hours per Month", value=15),
+                gr.Number(label="Job Satisfaction Score", value=3),
+                gr.Number(label="Work-Life Balance Score", value=3),
+                gr.Number(label="Distance from Home (km)", value=12),
+                gr.Number(label="Number of Previous Companies", value=2),
+                gr.Number(label="Remote Work Days per Week", value=2),
+                gr.Number(label="Bonus Amount (KES)", value=15000)
+            ],
+            outputs=gr.Textbox(
+                label="Predicted Employee Attrition Category"
+            ),
+        )
+    # --------------------------------------------------
+
+    # --------------------------------------------------
+    # 3. MUSIC RECOMMENDER
+    # --------------------------------------------------
+    with gr.Tab("Music Recommender"):
+
+        gr.Interface(
+            fn=recommend_music,
+            inputs=[
+                gr.Textbox(
+                    label="Basket (comma-separated track names)",
+                    value="Deep Sleep",
+                    placeholder="e.g. Deep Sleep, Morning Energy"
+                ),
+
+                gr.Number(
+                    label="Number of Recommendations",
+                    value=5,
+                    precision=0
+                )
+            ],
+            outputs=gr.Textbox(
+                label="Recommended Music Tracks"
+            ),
         )
 
-    with gr.Tab("SME Credit Risk Classifier"):
-        gr.Interface(
-            fn=predict_credit_risk,
-            inputs=[
-                gr.Textbox(label="Sector", value="Retail"),
-                gr.Textbox(label="County", value="Nairobi"),
-                gr.Textbox(label="Quarter", value="Q2"),
-                gr.Textbox(label="Loan Purpose", value="Working Capital"),
-                gr.Dropdown(label="Owner Education Level",
-                            choices=["Primary", "Secondary", "Tertiary", "Postgraduate"],
-                            value="Secondary"),
-                gr.Number(label="Business Age (years)", value=2.1),
-                gr.Number(label="Number of Employees", value=4),
-                gr.Number(label="Monthly Revenue (KES)", value=850000),
-                gr.Number(label="Loan Amount (KES)", value=150000),
-                gr.Number(label="Loan Term (months)", value=12),
-                gr.Number(label="Interest Rate (%)", value=16.5),
-                gr.Number(label="Collateral Value (leave 0 if unsecured)", value=0),
-                gr.Number(label="Debt-to-Income Ratio", value=0.62),
-                gr.Number(label="Credit Score", value=590),
-                gr.Number(label="Number of Previous Loans", value=1),
-                gr.Number(label="Missed Payments Count", value=3),
-                gr.Number(label="Online Presence Score", value=40.0),
-                gr.Number(label="Customer Satisfaction Score", value=3.4),
-                gr.Number(label="Competitor Density", value=6),
-            ],
-            outputs=gr.Textbox(label="Predicted Credit Risk Category"),
-        )
+    # --------------------------------------------------
+    # 4. STORE CUSTOMER SEGMENTER
+    # --------------------------------------------------
+    with gr.Tab("Store Customer Segmenter"):
 
-    with gr.Tab("Mall Customer Segmenter"):
         gr.Interface(
-            fn=predict_segment,
+            fn=predict_store_segment,
             inputs=[
-                gr.Number(label="Age", value=27),
-                gr.Number(label="Annual Income (k$)", value=45),
-                gr.Number(label="Spending Score (1-100)", value=72),
-            ],
-            outputs=gr.Textbox(label="Prediction"),
-        )
+                gr.Number(
+                    label="Monthly Revenue (KES)",
+                    value=500000
+                ),
 
-    with gr.Tab("E-commerce Recommender"):
-        gr.Interface(
-            fn=recommend_products,
-            inputs=[
-                gr.Textbox(label="Cart (comma-separated SKUs)", value="H06, H07"),
-                gr.Number(label="Top N Recommendations", value=3),
+                gr.Number(
+                    label="Daily Foot Traffic",
+                    value=150
+                ),
+
+                gr.Number(
+                    label="Staff Count",
+                    value=8
+                ),
+
+                gr.Number(
+                    label="Store Size (sqm)",
+                    value=100
+                ),
+
+                gr.Number(
+                    label="Average Basket Size (KES)",
+                    value=2500
+                )
             ],
-            outputs=gr.Textbox(label="Recommendations"),
+            outputs=gr.Textbox(
+                label="Predicted Store Segment"
+            ),
         )
 
 if __name__ == "__main__":

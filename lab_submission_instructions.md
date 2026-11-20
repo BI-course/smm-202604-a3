@@ -6,19 +6,19 @@
 
 **Member 1:**
 
-| **Details**                                                                                                                           | **Comment** |
-| :------------------------------------------------------------------------------------------------------------------------------------ | :---------- |
-| **Student ID**                                                                                                                        |             |
-| **Name**                                                                                                                              |             |
-| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
+| **Details**                                                                                                                           | **Comment**                                                                                                                                                                                                                                                                                                                         |
+|:--------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Student ID**                                                                                                                        | 165971                                                                                                                                                                                                                                                                                                                              |
+| **Name**<br/>                                                                                                                         | Jash Bhalakia                                                                                                                                                                                                                                                                                                                       |
+| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** | https://github.com/BI-course/smm-202604-a3/tree/feature/Jash-Bhalakia I built the rental price estimator and next-track music recommender interfaces, learning how to map regression inputs to form controls, format currency, dynamically generate UI elements from arrays, and design gracefully for empty states and API errors. |
 
 **Member 2:**
 
-| **Details**                                                                                                                           | **Comment** |
-| :------------------------------------------------------------------------------------------------------------------------------------ | :---------- |
-| **Student ID**                                                                                                                        |             |
-| **Name**                                                                                                                              |             |
-| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
+| **Details**                                                                                                                           | **Comment**                                                                                                                                                                                                      |
+|:--------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Student ID**                                                                                                                        | 148840                                                                                                                                                                                                           |
+| **Name**                                                                                                                              | Dileudonne Rao                                                                                                                                                                                                   |
+| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** | https://github.com/BI-course/smm-202604-a3/compare/main...feature/model-intergration\n Worked on api.py: downloaded 3 notebooks from colab and imported them into project, created aapi app routes to the models |
 
 **Member 3:**
 

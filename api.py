@@ -3,10 +3,14 @@ import os
 import joblib
 import pickle
 import pandas as pd
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder="frontend",
+    static_url_path=""
+)
 
 CORS(app, resources={r"/api/*": {"origins": [
     "http://localhost:5000", "http://127.0.0.1:5000",
@@ -45,6 +49,10 @@ clustering_kmeans = clustering_artifact["kmeans"]
 
 def error(message, status=400):
     return jsonify({"error": message}), status
+
+@app.route("/")
+def home():
+    return send_from_directory("frontend", "index.html")
 
 @app.route("/api/v1/models/rent-prediction-regressor/predictions", methods=["POST"])
 def predict_rent():
